@@ -30,29 +30,58 @@ PROCEDURE DIVISION.
 STOP RUN.
 
 DrawMaze.
-       display " "
+       PERFORM WriteBlankLine
        perform varying MazeRow from 1 by 1 until mazerow is greater than 8
-           perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
-               PERFORM DrawWall
-               evaluate doors(MazeColumn, MazeRow,1)
-                   when "Y"
-                       display " " with no advancing 
-                   when other 
-                       PERFORM DrawWall
-               end-evaluate
-           end-perform
-           PERFORM DrawEndWall
-           perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
-               evaluate doors(MazeColumn, MazeRow,4)
-                   when "Y"
-                       display " " with no advancing 
-                   when other 
-                       PERFORM DrawWall
-               end-evaluate
-               display " " WITH NO advancing 
-           end-perform
-           PERFORM DrawEndWall
+           PERFORM DrawMazeRow
        end-perform
+       PERFORM DrawMazeBottom
+EXIT.
+
+DrawMazeRow.
+       PERFORM DrawMazeRowTopLine
+       PERFORM DrawMazeRowMiddleLine
+EXIT.
+
+DrawMazeRowTopLine.
+       perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
+           PERFORM DrawWall
+           PERFORM DrawNorthDoor
+       end-perform
+       PERFORM DrawEndWall
+EXIT.
+
+DrawNorthDoor.
+       evaluate doors(MazeColumn, MazeRow, 1)
+           when "Y"
+               PERFORM DrawSpace
+           when other 
+               PERFORM DrawWall
+       end-evaluate
+EXIT.
+
+DrawMazeRowMiddleLine.
+       perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
+           PERFORM DrawWestDoor
+           PERFORM DrawSpace
+       end-perform
+       PERFORM DrawEndWall
+EXIT.
+
+DrawWestDoor.
+       evaluate doors(MazeColumn, MazeRow,4)
+           when "Y"
+               PERFORM DrawSpace
+           when other 
+               PERFORM DrawWall
+       end-evaluate
+EXIT.
+
+WriteBlankLine.
+       DISPLAY " "
+EXIT.
+
+
+DrawMazeBottom.
        perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
            PERFORM DrawWall
            PERFORM DrawWall
@@ -74,12 +103,20 @@ EXIT.
 
 InitializeMaze.
        PERFORM VARYING MazeColumn FROM 1 BY 1 UNTIL MazeColumn IS GREATER THAN 8
-           PERFORM VARYING MazeRow FROM 1 BY 1 UNTIL MazeRow IS GREATER THAN 8
-               MOVE "O" TO State(MazeColumn,MazeRow)
-               PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater THAN 4
-                   MOVE "N" TO Doors(MazeColumn,MazeRow,Direction)
-               END-PERFORM
-           END-PERFORM
+           PERFORM InitializeMazeRow
+       END-PERFORM
+EXIT.
+
+InitializeMazeRow.
+       PERFORM VARYING MazeRow FROM 1 BY 1 UNTIL MazeRow IS GREATER THAN 8
+           PERFORM InitializeMazeCell
+       END-PERFORM
+EXIT.
+
+InitializeMazeCell.
+       MOVE "O" TO State(MazeColumn,MazeRow)
+       PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater THAN 4
+           MOVE "N" TO Doors(MazeColumn,MazeRow,Direction)
        END-PERFORM
 EXIT.
 
@@ -88,9 +125,7 @@ GenerateMaze.
        MOVE "I" TO State(MazeColumn, MazeRow)
        PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater  THAN 4
            PERFORM DetermineNextPosition
-           IF NextColumn IS GREATER THAN 0 AND NextRow IS GREATER THAN 0 AND NextColumn IS NOT GREATER THAN 8 AND NextRow IS NOT GREATER THAN 8 THEN
-               MOVE "F" TO State(NextColumn, NextRow)
-           END-IF
+           PERFORM DetermineFrontierCell
        END-PERFORM
        PERFORM WITH TEST AFTER UNTIL MazeGenComplete IS EQUAL TO "Y"
            PERFORM WITH TEST AFTER UNTIL State(MazeColumn, MazeRow) IS EQUAL TO "F"
@@ -109,12 +144,16 @@ GenerateMaze.
            MOVE "Y" TO Doors(NextColumn, NextRow, Direction)
            PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater THAN 4
                PERFORM DetermineNextPosition
-               IF NextColumn IS GREATER THAN 0 AND NextRow IS GREATER THAN 0 AND NextColumn IS NOT GREATER THAN 8 AND NextRow IS NOT GREATER THAN 8 and state(NextColumn, NextRow) IS EQUAL TO "O" THEN
-                   MOVE "F" TO State(NextColumn, NextRow)
-               END-IF
+               PERFORM DetermineFrontierCell
            END-PERFORM
-           PERFORM CheckMazeGenComplete
+           PERFORM DetermineMazeGenComplete
        end-perform
+EXIT.
+
+DetermineFrontierCell.
+       IF NextColumn IS GREATER THAN 0 AND NextRow IS GREATER THAN 0 AND NextColumn IS NOT GREATER THAN 8 AND NextRow IS NOT GREATER THAN 8 and state(NextColumn, NextRow) IS EQUAL TO "O" THEN
+           MOVE "F" TO State(NextColumn, NextRow)
+       END-IF
 EXIT.
 
 DetermineRandomMazeCell.
@@ -141,10 +180,10 @@ DetermineDoorCandidacy.
        end-if
 Exit.
 
-CheckMazeGenComplete.
+DetermineMazeGenComplete.
        MOVE "Y" TO MazeGenComplete
-       PERFORM VARYING MazeColumn FROM 1 BY 1 UNTIL MazeColumn is greater than 8
-           perform varying MazeRow from 1 by 1 until mazerow is greater than 8
+       PERFORM VARYING MazeColumn FROM 1 BY 1 UNTIL MazeColumn IS GREATER THAN 8
+           perform varying MazeRow from 1 by 1 until MazeRow IS GREATER THAN 8
                if State(MazeColumn, MazeRow) is equal to "F" then 
                    move "N" to MazeGenComplete
                    exit
