@@ -4,8 +4,6 @@ PROGRAM-ID. MAZEGEN.
 
 DATA DIVISION.
        WORKING-STORAGE SECTION.
-       01 Prng-Data.
-           02 dummy PIC 999.
        01 MazeData.
            02 MazeColumns OCCURS 8 TIMES.
                03 MazeRows OCCURS 8 TIMES.
@@ -21,7 +19,7 @@ DATA DIVISION.
            02 DoorCandidate PIC X occurs 4 times.
 
 PROCEDURE DIVISION.
-       PERFORM Seed-Rng
+       CALL "RNG"
        PERFORM InitializeMaze
        PERFORM GenerateMaze
        PERFORM DrawMaze
@@ -249,7 +247,3 @@ DetermineNextPosition.
                SUBTRACT 1 FROM NextColumn
        END-EVALUATE
 EXIT.
-
-Seed-Rng.
-       COMPUTE dummy = FUNCTION RANDOM(function seconds-past-midnight())
-Exit.
