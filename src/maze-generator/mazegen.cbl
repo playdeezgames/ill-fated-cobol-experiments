@@ -33,30 +33,43 @@ DrawMaze.
        display " "
        perform varying MazeRow from 1 by 1 until mazerow is greater than 8
            perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
-               display "#" WITH NO advancing 
+               PERFORM DrawWall
                evaluate doors(MazeColumn, MazeRow,1)
                    when "Y"
                        display " " with no advancing 
                    when other 
-                       display "#" with no advancing 
+                       PERFORM DrawWall
                end-evaluate
            end-perform
-           display "#"
+           PERFORM DrawEndWall
            perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
                evaluate doors(MazeColumn, MazeRow,4)
                    when "Y"
                        display " " with no advancing 
                    when other 
-                       display "#" with no advancing 
+                       PERFORM DrawWall
                end-evaluate
                display " " WITH NO advancing 
            end-perform
-           display "#"
+           PERFORM DrawEndWall
        end-perform
        perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
-           display "##" WITH NO advancing 
+           PERFORM DrawWall
+           PERFORM DrawWall
        end-perform
-       display "#"
+       PERFORM DrawEndWall
+EXIT.
+
+DrawWall.
+       DISPLAY "#" WITH NO ADVANCING
+EXIT.
+
+DrawSpace.
+       DISPLAY " " WITH NO ADVANCING
+EXIT.
+
+DrawEndWall.
+       DISPLAY "#"
 EXIT.
 
 InitializeMaze.
@@ -71,8 +84,7 @@ InitializeMaze.
 EXIT.
 
 GenerateMaze.
-       COMPUTE MazeColumn = FUNCTION RANDOM() * 8 + 1
-       COMPUTE MazeRow = FUNCTION RANDOM() * 8 + 1
+       PERFORM DetermineRandomMazeCell
        MOVE "I" TO State(MazeColumn, MazeRow)
        PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater  THAN 4
            PERFORM DetermineNextPosition
@@ -82,8 +94,7 @@ GenerateMaze.
        END-PERFORM
        PERFORM WITH TEST AFTER UNTIL MazeGenComplete IS EQUAL TO "Y"
            PERFORM WITH TEST AFTER UNTIL State(MazeColumn, MazeRow) IS EQUAL TO "F"
-               COMPUTE MazeColumn = FUNCTION RANDOM() * 8 + 1
-               COMPUTE MazeRow = FUNCTION RANDOM() * 8 + 1
+               PERFORM DetermineRandomMazeCell
            END-PERFORM
            PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater than 4
                perform DetermineDoorCandidacy
@@ -104,6 +115,11 @@ GenerateMaze.
            END-PERFORM
            PERFORM CheckMazeGenComplete
        end-perform
+EXIT.
+
+DetermineRandomMazeCell.
+       COMPUTE MazeColumn = FUNCTION RANDOM() * 8 + 1
+       COMPUTE MazeRow = FUNCTION RANDOM() * 8 + 1
 EXIT.
 
 DetermineOppositeDirection.
