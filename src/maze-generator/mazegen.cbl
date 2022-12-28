@@ -5,8 +5,6 @@ PROGRAM-ID. MAZEGEN.
 DATA DIVISION.
        WORKING-STORAGE SECTION.
        01 Prng-Data.
-           02 dateTimeString PIC X(16).
-           02 dateTime PIC 9(16) USAGE IS COMP VALUE ZEROS.
            02 dummy PIC 999.
        01 MazeData.
            02 MazeColumns OCCURS 8 TIMES.
@@ -31,10 +29,14 @@ STOP RUN.
 
 DrawMaze.
        PERFORM WriteBlankLine
+       PERFORM DrawMazeRows
+       PERFORM DrawMazeBottom
+EXIT.
+
+DrawMazeRows.
        perform varying MazeRow from 1 by 1 until mazerow is greater than 8
            PERFORM DrawMazeRow
        end-perform
-       PERFORM DrawMazeBottom
 EXIT.
 
 DrawMazeRow.
@@ -80,7 +82,6 @@ WriteBlankLine.
        DISPLAY " "
 EXIT.
 
-
 DrawMazeBottom.
        perform varying MazeColumn from 1 by 1 until MazeColumn is greater than 8
            PERFORM DrawWall
@@ -114,43 +115,85 @@ InitializeMazeRow.
 EXIT.
 
 InitializeMazeCell.
-       MOVE "O" TO State(MazeColumn,MazeRow)
+       PERFORM MarkCellOutside
+       PERFORM ClearCellDoors
+EXIT.
+
+ClearCellDoors.
        PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater THAN 4
-           MOVE "N" TO Doors(MazeColumn,MazeRow,Direction)
+           PERFORM ClearCellDoor
        END-PERFORM
+EXIT.
+
+ClearCellDoor.
+       MOVE "N" TO Doors(MazeColumn,MazeRow,Direction)
+EXIT.
+
+MarkCellOutside.
+       MOVE "O" TO State(MazeColumn,MazeRow)
 EXIT.
 
 GenerateMaze.
        PERFORM DetermineRandomMazeCell
-       MOVE "I" TO State(MazeColumn, MazeRow)
-       PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater  THAN 4
-           PERFORM DetermineNextPosition
-           PERFORM DetermineFrontierCell
-       END-PERFORM
+       PERFORM MarkCellInside
+       PERFORM MarkFrontierNeighbors
        PERFORM WITH TEST AFTER UNTIL MazeGenComplete IS EQUAL TO "Y"
-           PERFORM WITH TEST AFTER UNTIL State(MazeColumn, MazeRow) IS EQUAL TO "F"
-               PERFORM DetermineRandomMazeCell
-           END-PERFORM
-           PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater than 4
-               perform DetermineDoorCandidacy
-           end-perform
-           perform with test after until DoorCandidate(Direction) is equal to "Y"
-               compute direction = function random() * 4 + 1
-           end-perform
-           MOVE "I" TO State(MazeColumn, MazeRow)
-           MOVE "Y" TO Doors(MazeColumn, MazeRow, Direction)
-           perform DetermineNextPosition
-           perform DetermineOppositeDirection
-           MOVE "Y" TO Doors(NextColumn, NextRow, Direction)
-           PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater THAN 4
-               PERFORM DetermineNextPosition
-               PERFORM DetermineFrontierCell
-           END-PERFORM
-           PERFORM DetermineMazeGenComplete
+           PERFORM GenerateMazeCell
        end-perform
 EXIT.
 
-DetermineFrontierCell.
+GenerateMazeCell.
+       PERFORM DetermineRandomFrontierCell
+       PERFORM DetermineDoorCandidates
+       PERFORM DetermineValidDoorCandidate
+       PERFORM MarkCellInside
+       PERFORM SetDoor
+       perform DetermineNextPosition
+       perform DetermineOppositeDirection
+       PERFORM SetNextDoor
+       PERFORM MarkFrontierNeighbors
+       PERFORM DetermineMazeGenComplete
+EXIT.
+
+DetermineDoorCandidates.
+       PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater than 4
+           perform DetermineDoorCandidacy
+       end-perform
+EXIT.
+
+DetermineValidDoorCandidate.
+       perform with test after until DoorCandidate(Direction) is equal to "Y"
+           compute direction = function random() * 4 + 1
+       end-perform
+EXIT.
+
+SetDoor.
+       MOVE "Y" TO Doors(MazeColumn, MazeRow, Direction)
+EXIT.
+
+SetNextDoor.
+       MOVE "Y" TO Doors(NextColumn, NextRow, Direction)
+EXIT.
+
+DetermineRandomFrontierCell.
+       PERFORM WITH TEST AFTER UNTIL State(MazeColumn, MazeRow) IS EQUAL TO "F"
+           PERFORM DetermineRandomMazeCell
+       END-PERFORM
+EXIT.
+
+MarkCellInside.
+       MOVE "I" TO State(MazeColumn, MazeRow)
+EXIT.
+
+
+MarkFrontierNeighbors.
+       PERFORM VARYING Direction FROM 1 BY 1 UNTIL Direction IS greater  THAN 4
+           PERFORM DetermineNextPosition
+           PERFORM MarkFrontierCell
+       END-PERFORM
+EXIT.
+
+MarkFrontierCell.
        IF NextColumn IS GREATER THAN 0 AND NextRow IS GREATER THAN 0 AND NextColumn IS NOT GREATER THAN 8 AND NextRow IS NOT GREATER THAN 8 and state(NextColumn, NextRow) IS EQUAL TO "O" THEN
            MOVE "F" TO State(NextColumn, NextRow)
        END-IF
@@ -208,7 +251,5 @@ DetermineNextPosition.
 EXIT.
 
 Seed-Rng.
-       MOVE FUNCTION CURRENT-DATE TO dateTimeString
-       MOVE FUNCTION NUMVAL(dateTimeString) TO dateTime
-       COMPUTE dummy = FUNCTION RANDOM(dateTime)
+       COMPUTE dummy = FUNCTION RANDOM(function seconds-past-midnight())
 Exit.
