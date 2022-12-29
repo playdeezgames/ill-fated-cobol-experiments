@@ -17,6 +17,13 @@ DATA DIVISION.
            02 LeftDoorImage.
               03 LeftDoorImageRows OCCURS 16 TIMES.
                  04 LeftDoorImagePixels PIC X OCCURS 6 TIMES.
+           02 RightDoorImage.
+              03 RightDoorImageRows OCCURS 16 TIMES.
+                 04 RightDoorImagePixels PIC X OCCURS 6 TIMES.
+           02 KoboldImage.
+              03 KoboldImageRows OCCURS 12 TIMES.
+                 04 KoboldImagePixels PIC X OCCURS 24 TIMES.
+                    88 IsVisible VALUES " ", "#".
        01 ScratchPad.
           02 RenderRow PIC 99.
              88 NoMoreRows VALUES 25 THRU 99.
@@ -36,6 +43,16 @@ DrawRoom.
        PERFORM DrawRoomFrame
        PERFORM DrawAheadDoor
        PERFORM DrawLeftDoor
+       PERFORM DrawRightDoor
+       PERFORM DrawKobold
+EXIT.
+
+DrawKobold.
+       PERFORM VARYING SourceRow FROM 1 BY 1 UNTIL SourceRow IS GREATER THAN 12 AFTER SourceColumn FROM 1 BY 1 UNTIL SourceColumn IS GREATER THAN 24
+           IF IsVisible(SourceRow, SourceColumn) THEN
+               MOVE KoboldImagePixels(SourceRow, SourceColumn) TO FramePixels(SourceRow + 9, SourceColumn + 16)
+           END-IF
+       END-PERFORM
 EXIT.
 
 DrawAheadDoor.
@@ -47,6 +64,12 @@ EXIT.
 DrawLeftDoor.
        PERFORM VARYING SourceRow FROM 1 BY 1 UNTIL SourceRow IS GREATER THAN 16 AFTER SourceColumn FROM 1 BY 1 UNTIL SourceColumn IS GREATER THAN 6
            MOVE LeftDoorImagePixels(SourceRow, SourceColumn) TO FramePixels(SourceRow + 7, SourceColumn + 3)
+       END-PERFORM
+EXIT.
+
+DrawRightDoor.
+       PERFORM VARYING SourceRow FROM 1 BY 1 UNTIL SourceRow IS GREATER THAN 16 AFTER SourceColumn FROM 1 BY 1 UNTIL SourceColumn IS GREATER THAN 6
+           MOVE RightDoorImagePixels(SourceRow, SourceColumn) TO FramePixels(SourceRow + 7, SourceColumn + 47)
        END-PERFORM
 EXIT.
 
@@ -66,6 +89,8 @@ InitializeImages.
        PERFORM InitializeRoomImage
        PERFORM InitializeAheadDoorImage
        PERFORM InitializeLeftDoorImage
+       PERFORM InitializeRightDoorImage
+       PERFORM InitializeKoboldImage
 EXIT.
 
 InitializeRoomImage.
@@ -124,4 +149,38 @@ InitializeLeftDoorImage.
        MOVE "|     " TO LeftDoorImageRows(14)
        MOVE "|     " TO LeftDoorImageRows(15)
        MOVE "+     " TO LeftDoorImageRows(16)
+EXIT.
+
+InitializeRightDoorImage.
+       MOVE "   _/+" TO RightDoorImageRows(1)
+       MOVE " _/  |" TO RightDoorImageRows(2)
+       MOVE "+    |" TO RightDoorImageRows(3)
+       MOVE "|    |" TO RightDoorImageRows(4)
+       MOVE "|    |" TO RightDoorImageRows(5)
+       MOVE "|    |" TO RightDoorImageRows(6)
+       MOVE "|    |" TO RightDoorImageRows(7)
+       MOVE "|    |" TO RightDoorImageRows(8)
+       MOVE "|    |" TO RightDoorImageRows(9)
+       MOVE "|    |" TO RightDoorImageRows(10)
+       MOVE "|    |" TO RightDoorImageRows(11)
+       MOVE "|    |" TO RightDoorImageRows(12)
+       MOVE "+    |" TO RightDoorImageRows(13)
+       MOVE "     |" TO RightDoorImageRows(14)
+       MOVE "     |" TO RightDoorImageRows(15)
+       MOVE "     +" TO RightDoorImageRows(16)
+EXIT.
+
+InitializeKoboldImage.
+       MOVE "........................" TO KoboldImageRows(1)
+       MOVE "........................" TO KoboldImageRows(2)
+       MOVE "........##....##........" TO KoboldImageRows(3)
+       MOVE "........########........" TO KoboldImageRows(4)
+       MOVE "........  ##  ##........" TO KoboldImageRows(5)
+       MOVE "........######.........." TO KoboldImageRows(6)
+       MOVE "..........    ####......" TO KoboldImageRows(7)
+       MOVE "........    ####..##...." TO KoboldImageRows(8)
+       MOVE "......##..######..##...." TO KoboldImageRows(9)
+       MOVE "..........######........" TO KoboldImageRows(10)
+       MOVE "..........##..##........" TO KoboldImageRows(11)
+       MOVE "........####..##........" TO KoboldImageRows(12)
 EXIT.
