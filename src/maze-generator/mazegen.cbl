@@ -8,6 +8,9 @@ DATA DIVISION.
            02 MazeColumns OCCURS 8 TIMES.
                03 MazeRows OCCURS 8 TIMES.
                    04 State PIC X.
+                      88 Inside VALUE "I".
+                      88 Outside VALUE "O".
+                      88 Frontier VALUE "F".
                    04 Doors PIC X OCCURS 4 TIMES.
        01 ScratchPad.
            02 MazeColumn PIC 9.
@@ -16,6 +19,8 @@ DATA DIVISION.
            02 NextColumn PIC 9.
            02 NextRow PIC 9.
            02 MazeGenComplete PIC X.
+              88 GenerationComplete VALUE "Y".
+              88 GenerationIncomplete VALUE "N".
            02 DoorCandidate PIC X occurs 4 times.
 
 PROCEDURE DIVISION.
@@ -128,14 +133,14 @@ ClearCellDoor.
 EXIT.
 
 MarkCellOutside.
-       MOVE "O" TO State(MazeColumn,MazeRow)
+       SET Outside(MazeColumn,MazeRow) TO TRUE
 EXIT.
 
 GenerateMaze.
        PERFORM DetermineRandomMazeCell
        PERFORM MarkCellInside
        PERFORM MarkFrontierNeighbors
-       PERFORM WITH TEST AFTER UNTIL MazeGenComplete IS EQUAL TO "Y"
+       PERFORM WITH TEST AFTER UNTIL GenerationComplete
            PERFORM GenerateMazeCell
        end-perform
 EXIT.
@@ -222,11 +227,11 @@ DetermineDoorCandidacy.
 Exit.
 
 DetermineMazeGenComplete.
-       MOVE "Y" TO MazeGenComplete
+       SET GenerationComplete TO TRUE
        PERFORM VARYING MazeColumn FROM 1 BY 1 UNTIL MazeColumn IS GREATER THAN 8
            perform varying MazeRow from 1 by 1 until MazeRow IS GREATER THAN 8
                if State(MazeColumn, MazeRow) is equal to "F" then 
-                   move "N" to MazeGenComplete
+                   SET GenerationIncomplete TO TRUE
                    exit
                end-if
            end-perform
