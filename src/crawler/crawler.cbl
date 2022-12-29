@@ -12,12 +12,15 @@ DATA DIVISION.
            02 RoomImage.
               03 RoomImageRows PIC X(56) OCCURS 24 TIMES.
            02 AheadDoorImage.
-              02 AheadDoorImageRows PIC X(10) OCCURS 10 TIMES.
+              03 AheadDoorImageRows OCCURS 10 TIMES.
+                 04 AheadDoorImagePixels PIC X OCCURS 10 TIMES.
        01 ScratchPad.
           02 RenderRow PIC 99.
              88 NoMoreRows VALUES 25 THRU 99.
           02 RenderColumn PIC 99.
           02 FramePixel PIC X.
+          02 SourceRow PIC 99.
+          02 SourceColumn PIC 99.
 
 PROCEDURE DIVISION.
        CALL "RNG"
@@ -32,7 +35,9 @@ DrawRoom.
 EXIT.
 
 DrawAheadDoor.
-       
+       PERFORM VARYING SourceRow FROM 1 BY 1 UNTIL SourceRow IS GREATER THAN 10 AFTER SourceColumn FROM 1 BY 1 UNTIL SourceColumn IS GREATER THAN 10
+           MOVE AheadDoorImagePixels(SourceRow, SourceColumn) TO FramePixels(SourceRow + 9, SourceColumn + 23)
+       END-PERFORM
 EXIT.
 
 DrawRoomFrame.
