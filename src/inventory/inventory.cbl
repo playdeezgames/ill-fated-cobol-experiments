@@ -11,7 +11,7 @@ DATA DIVISION.
                    88 IsPassageway VALUE "P".
                    88 IsChamber VALUE "C".
              03 LocationId PIC 999 VALUE 1. 
-                88 InvalidNextLocationId VALUES 101 THRU 999.
+                88 InvalidId VALUES 101 THRU 999.
        01 ScratchPad.
           02 CurrentLocationId PIC 999.
           02 Dummy PIC 999.
@@ -27,7 +27,7 @@ EXIT.
 
 InitializeLocations.
        MOVE 1 TO LocationId
-       PERFORM InitializeLocation UNTIL InvalidNextLocationId
+       PERFORM InitializeLocation UNTIL InvalidId
 EXIT.
 
 InitializeLocation.
