@@ -10,6 +10,7 @@ DATA DIVISION.
                 04 LocationTypes PIC X VALUE "P".
                    88 IsPassageway VALUE "P".
                    88 IsChamber VALUE "C".
+                04 ItemId PIC 999 VALUE ZEROS.
              03 LocationId PIC 999 VALUE 1. 
                 88 InvalidId VALUES 101 THRU 999.
           02 ItemData.
@@ -23,21 +24,67 @@ DATA DIVISION.
                 88 InvalidId VALUES 101 THRU 999.
        01 ScratchPad.
           02 LocationId PIC 999.
+             88 GameOver VALUE 0.
           02 Dummy PIC 999.
+          02 Command PIC X.
+
 PROCEDURE DIVISION.
        CALL "RNGSEED"
        PERFORM InitializeLocations
-       PERFORM DisplayLocationType VARYING LocationId OF ScratchPad FROM 1 BY 1 UNTIL LocationId OF ScratchPad IS GREATER THAN 100
+       MOVE 1 TO LocationId Of ScratchPad
+       PERFORM GameLoop UNTIL GameOver
 STOP RUN.
 
-DisplayLocationType.
-       DISPLAY LocationId OF ScratchPad " = " LocationTypes(LocationId OF ScratchPad)
-EXIT.
+GameLoop.
+       DISPLAY "LocationId: " LocationId OF ScratchPad
+       DISPLAY "ItemId: " ItemId OF Locations(LocationId OF ScratchPad)
+       ACCEPT Command
+       EVALUATE Command
+           WHEN "q"
+               SET GameOver TO TRUE
+           WHEN "n"
+               PERFORM MoveNorth
+           WHEN "s"
+               PERFORM MoveSouth
+           WHEN "e"
+               PERFORM MoveEast
+           WHEN "w"
+               PERFORM MoveWest
+       END-EVALUATE.
+
+MoveNorth.
+IF LocationId OF ScratchPad IS NOT LESS THAN 11 THEN
+       SUBTRACT 10 FROM LocationId OF ScratchPad
+END-IF.
+
+MoveSouth.
+IF LocationId OF ScratchPad IS NOT GREATER THAN 90 THEN
+       ADD 10 TO LocationId OF ScratchPad
+END-IF.
+
+MoveEast.
+IF LocationId OF ScratchPad IS NOT GREATER THAN 99 THEN
+       ADD 1 TO LocationId OF ScratchPad
+END-IF.
+
+MoveWest.
+IF LocationId OF ScratchPad IS NOT LESS THAN 2 THEN
+       SUBTRACT 1 FROM LocationId OF ScratchPad
+END-IF.
 
 InitializeLocations.
        MOVE 1 TO LocationId OF LocationData
        PERFORM InitializeLocation UNTIL InvalidId OF LocationData
-EXIT.
+       PERFORM PlaceItems.
+
+PlaceItems.
+       PERFORM PlaceFoods
+       PERFORM PlacePotions.
+
+PlaceFoods.
+       
+
+PlacePotions.
 
 InitializeLocation.
        COMPUTE Dummy = FUNCTION RANDOM() * 2
@@ -47,5 +94,5 @@ InitializeLocation.
         WHEN 1
            SET IsChamber(LocationId OF LocationData) TO TRUE
        END-EVALUATE
-       ADD 1 TO LocationId OF LocationData
-EXIT.
+       MOVE 0 TO ItemId OF Locations(LocationId OF LocationData)
+       ADD 1 TO LocationId OF LocationData.
