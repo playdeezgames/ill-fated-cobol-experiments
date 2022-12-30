@@ -32,7 +32,6 @@ EXIT.
 
 InitializeLocation.
        COMPUTE Dummy = FUNCTION RANDOM() * 2
-       DISPLAY Dummy WITH NO ADVANCING
        EVALUATE Dummy
         WHEN 0
            SET IsPassageway(LocationId) TO TRUE
