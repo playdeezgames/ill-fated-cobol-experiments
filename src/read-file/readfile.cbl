@@ -31,6 +31,7 @@ PROCEDURE DIVISION.
                AT END SET IsDoneReading TO TRUE
            END-READ
            IF IsNotDoneReading THEN
+               DISPLAY RoomFrameBuffer
                MOVE RoomFrameBuffer TO OutputBuffer
                WRITE OutputBuffer
            END-IF
