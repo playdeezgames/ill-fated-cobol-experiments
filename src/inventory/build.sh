@@ -1,0 +1,1 @@
+cobc -x inventory.cbl rngseed.cbl

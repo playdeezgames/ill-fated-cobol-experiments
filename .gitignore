@@ -5,3 +5,4 @@ src/subroutine-test/caller
 src/ohai/ohai
 src/crawler/crawler
 src/read-file/readfile
+src/inventory/inventory
