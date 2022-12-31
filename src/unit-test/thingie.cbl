@@ -1,0 +1,15 @@
+       >>SOURCE FORMAT FREE
+IDENTIFICATION DIVISION.
+PROGRAM-ID. THINGIE.
+
+DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       LINKAGE SECTION.
+       01 LSFirstInput PIC 9999.
+       01 LSSecondInput PIC 9999.
+       01 LSOutput PIC 9999.
+PROCEDURE DIVISION USING LSFirstInput LSSecondInput LSOutput.
+       DISPLAY "HI! I'M THINGIE!"
+       MOVE LSFirstInput TO LSOutput
+       ADD LSSecondInput TO LSOutput
+       EXIT PROGRAM.

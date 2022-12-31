@@ -1,0 +1,19 @@
+       >>SOURCE FORMAT FREE
+IDENTIFICATION DIVISION.
+PROGRAM-ID. TESTTHINGIE.
+
+DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WSFirstInput PIC 9999.
+       01 WSSecondInput PIC 9999.
+       01 WSOutput PIC 9999.
+PROCEDURE DIVISION.
+       MOVE 1 TO WSFirstInput
+       MOVE 2 TO WSSecondInput
+       CALL "THINGIE" USING WSFirstInput WSSecondInput WSOutput
+       IF WSOutput IS NOT EQUAL TO 3 then 
+           DISPLAY "FAIL!"
+           STOP RUN WITH ERROR 9
+       END-IF
+       DISPLAY "PASS!"
+STOP RUN.

@@ -6,3 +6,5 @@ src/ohai/ohai
 src/crawler/crawler
 src/read-file/readfile
 src/inventory/inventory
+src/shos/shos
+src/unit-test/testthingie
